@@ -1,12 +1,33 @@
 import React from 'react'
 import config from "../config.json"
 import styled from "styled-components"
-import { StyledTimeline } from "../src/components/Timeline"
 import Menu from "../src/components/Menu"
+import { StyledTimeline } from "../src/components/Timeline"
+import { createClient } from "@supabase/supabase-js"
 
+const PROJECT_URL = "https://ptqfpodvdwrhmrgamhsu.supabase.co";
+const PUBLIC_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB0cWZwb2R2ZHdyaG1yZ2FtaHN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2NzIwMTYwNDgsImV4cCI6MTk4NzU5MjA0OH0.1mfR6zLo8CYp8pFsDt1AvOpL9PA8p2MfWAzfhoC-Vb4";
+const supabase = createClient(PROJECT_URL, PUBLIC_KEY);
 
 const HomePage = () => {
     const [filterValue, setFilterValue] = React.useState("");
+    const [playlists, setPlaylists] = React.useState({})
+
+    React.useEffect(() => {
+
+        supabase.from("video")
+            .select("*")
+            .then((result) => {
+                const newPlaylists = { ...playlists }
+                result.data.forEach((video) => {
+                    if (!newPlaylists[video.playlist]) {
+                        newPlaylists[video.playlist] = [];
+                    }
+                    newPlaylists[video.playlist].push(video);
+                });
+                setPlaylists(newPlaylists);
+            });
+    }, []);
 
     return (
         <>
@@ -17,7 +38,7 @@ const HomePage = () => {
             }}>
                 <Menu filterValue={filterValue} setFilterValue={setFilterValue} />
                 <Header />
-                <Timeline filterValue={filterValue} playlists={config.playlists} />
+                <Timeline filterValue={filterValue} playlists={playlists} />
             </div>
         </>
     );
@@ -27,7 +48,7 @@ export default HomePage
 
 const StyledHeader = styled.div`
 
-    background-color: ${({theme}) => theme.backgroundLevel1} ;
+    background-color: ${({ theme }) => theme.backgroundLevel1} ;
     
     img {
         width: 80px;
@@ -45,13 +66,13 @@ const StyledHeader = styled.div`
 `;
 
 const StyledBanner = styled.div`
-    background-image: url(${({bg}) => bg});
+    background-image: url(${({ bg }) => bg});
     height: 230px;
 `
 const Header = () => {
     return (
         <StyledHeader>
-            <StyledBanner bg={config.bg}/>
+            <StyledBanner bg={config.bg} />
             {/* <img src="banner" /> */}
             <section className="user-info">
                 <img src={`https://github.com/${config.github}.png`} />
@@ -81,19 +102,19 @@ const Timeline = ({ filterValue, ...props }) => {
                         <h2>{playlistName} </h2>
                         <div>
                             {videos
-                            .filter((video) => {
-                                return video.title.toLowerCase().includes(filterValue.toLowerCase())
-                            })
-                            .map((video) => {
-                                return (
-                                    <a key={video.url} href={video.url}>
-                                        <img src={video.thumb} />
-                                        <span>
-                                            {video.title}
-                                        </span>
-                                    </a>
-                                )
-                            })}
+                                .filter((video) => {
+                                    return video.title.toLowerCase().includes(filterValue.toLowerCase())
+                                })
+                                .map((video) => {
+                                    return (
+                                        <a key={video.url} href={video.url}>
+                                            <img src={video.thumbnail} />
+                                            <span>
+                                                {video.title}
+                                            </span>
+                                        </a>
+                                    )
+                                })}
                         </div>
                     </section>
                 )
