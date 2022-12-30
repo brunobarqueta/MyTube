@@ -1,4 +1,4 @@
-# MyTube
+# my-youtube
 
 A React.js App that imitates Youtube.
 Written using next.js, contextAPI, Styled Components, and Supabase as database.
